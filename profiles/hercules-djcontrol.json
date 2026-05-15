@@ -1,0 +1,42 @@
+{
+  "name": "Hercules DJControl",
+  "match": ["hercules", "inpulse", "djcontrol"],
+  "deckBChannel": 2,
+  "globalChannel": 16,
+  "padChannelA": 0,
+  "padChannelB": 0,
+  "padHotCueNote": -1,
+  "padLoopNote": -1,
+  "padSamplerNote": -1,
+  "padNotes": [-1, -1, -1, -1],
+  "padLEDFirstNote": -1,
+  "padLEDChannel": 1,
+  "capabilities": ["DeckControls", "HotCues"],
+  "cc": {
+    "9":  "DeckATempo",
+    "1":  "DeckAVolume",
+    "22": "DeckAEQHigh",
+    "21": "DeckAEQMid",
+    "20": "DeckAEQLow",
+    "0":  "DeckAGain",
+    "6":  "DeckAJog"
+  },
+  "notes": {
+    "0": "DeckAPlay",
+    "1": "DeckASync",
+    "2": "DeckACuePt",
+    "3": "DeckALoop",
+    "4": "DeckAHotCue0",
+    "5": "DeckAHotCue1",
+    "6": "DeckAHotCue2",
+    "7": "DeckAHotCue3",
+    "9": "DeckACue"
+  },
+  "globalCC": {
+    "17": "Crossfader"
+  },
+  "globalNotes": {
+    "0": "DeckALoad",
+    "1": "DeckBLoad"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "Akai APC",
+  "match": ["apc"],
+  "deckBChannel": 0,
+  "globalChannel": 0,
+  "padChannelA": 0,
+  "padChannelB": 0,
+  "padHotCueNote": -1,
+  "padLoopNote": -1,
+  "padSamplerNote": -1,
+  "padNotes": [-1, -1, -1, -1],
+  "padLEDFirstNote": -1,
+  "padLEDChannel": 1,
+  "capabilities": ["SamplerPads", "DeckControls"],
+  "cc": {
+    "7":  "DeckAVolume",
+    "11": "DeckBVolume",
+    "14": "Crossfader",
+    "16": "DeckATempo",
+    "17": "DeckBTempo"
+  },
+  "notes": {
+    "0":  "SamplerPad0",
+    "1":  "SamplerPad1",
+    "2":  "SamplerPad2",
+    "3":  "SamplerPad3",
+    "4":  "SamplerPad4",
+    "5":  "SamplerPad5",
+    "6":  "SamplerPad6",
+    "7":  "SamplerPad7",
+    "8":  "SamplerPad8",
+    "9":  "SamplerPad9",
+    "10": "SamplerPad10",
+    "11": "SamplerPad11",
+    "12": "SamplerPad12",
+    "13": "SamplerPad13",
+    "14": "SamplerPad14",
+    "15": "SamplerPad15"
+  },
+  "globalCC": {},
+  "globalNotes": {}
+}

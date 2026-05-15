@@ -1,0 +1,38 @@
+{
+  "name": "Numark Party Mix",
+  "match": ["party mix", "partymix"],
+  "deckBChannel": 2,
+  "globalChannel": 16,
+  "padChannelA": 5,
+  "padChannelB": 6,
+  "padHotCueNote": 0,
+  "padLoopNote": 11,
+  "padSamplerNote": 14,
+  "padNotes": [20, 21, 22, 23],
+  "padLEDFirstNote": -1,
+  "padLEDChannel": 1,
+  "capabilities": ["DeckControls", "HotCues", "FXControls", "SamplerPads"],
+  "cc": {
+    "6":  "DeckAJog",
+    "9":  "DeckATempo",
+    "23": "DeckAGain",
+    "24": "DeckAEQHigh",
+    "25": "DeckAEQLow",
+    "28": "DeckAVolume"
+  },
+  "notes": {
+    "0":  "DeckAPlay",
+    "1":  "DeckACuePt",
+    "2":  "DeckASync",
+    "7":  "DeckAScratchMode",
+    "27": "DeckACue"
+  },
+  "globalCC": {
+    "8":  "Crossfader",
+    "10": "DeckAGain"
+  },
+  "globalNotes": {
+    "2": "DeckALoad",
+    "3": "DeckBLoad"
+  }
+}

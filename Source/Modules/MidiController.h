@@ -41,6 +41,7 @@ struct MidiMapping {
     bool   isButton = false;
 
     static juce::String targetName(Target t);
+    static juce::String targetId   (Target t);  // identifier for JSON serialisation
 };
 
 enum class DeviceCapability { DeckControls, SamplerPads, HotCues, FXControls };
@@ -134,6 +135,18 @@ public:
     void saveCustomMappings(const juce::File& file) const;
     void loadCustomMappings(const juce::File& file);
 
+    // JSON profile system
+    // Users can place *.json controller profiles in getUserProfilesDir().
+    // The plugin checks this directory first before falling back to built-in profiles.
+    // Linux:   ~/.config/Patchwork/profiles/
+    // macOS:   ~/Library/Application Support/Patchwork/profiles/
+    // Windows: %APPDATA%\Patchwork\profiles\
+    static juce::File getUserProfilesDir();
+
+    // Export the active mapping for a device as a portable JSON profile file.
+    void exportProfileToJSON(const juce::String& deviceName,
+                             const juce::File&   outputFile) const;
+
 private:
     void handleIncomingMidiMessage(juce::MidiInput* source,
                                    const juce::MidiMessage& msg) override;
@@ -174,6 +187,9 @@ private:
     void openDevice (const juce::MidiDeviceInfo& info);
     void closeDevice(const juce::String& identifier);
     DeviceMapping buildProfile(const juce::String& name);
+    bool tryLoadJSONProfile(const juce::String& deviceName, DeviceMapping& out);
+    static MidiMapping::Target targetFromString(const juce::String& id);
+    static DeviceMapping       profileFromJSON (const juce::var& json);
 
     // Profile builders
     void applyNumarkPartyMix(DeviceMapping&);

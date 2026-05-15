@@ -481,12 +481,296 @@ void MidiController::applyGenericPads(DeviceMapping& m)
     m.profileName  = "Generic (use MIDI Learn)";
 }
 
+// ── JSON Profile system ───────────────────────────────────────────────────────
+
+juce::File MidiController::getUserProfilesDir()
+{
+    return juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+               .getChildFile("Patchwork/profiles");
+}
+
+MidiMapping::Target MidiController::targetFromString(const juce::String& id)
+{
+    using T = MidiMapping::Target;
+    // Named targets
+    if (id == "DeckAVolume")     return T::DeckAVolume;
+    if (id == "DeckBVolume")     return T::DeckBVolume;
+    if (id == "DeckATempo")      return T::DeckATempo;
+    if (id == "DeckBTempo")      return T::DeckBTempo;
+    if (id == "DeckAPan")        return T::DeckAPan;
+    if (id == "DeckBPan")        return T::DeckBPan;
+    if (id == "DeckAEQHigh")     return T::DeckAEQHigh;
+    if (id == "DeckAEQMid")      return T::DeckAEQMid;
+    if (id == "DeckAEQLow")      return T::DeckAEQLow;
+    if (id == "DeckBEQHigh")     return T::DeckBEQHigh;
+    if (id == "DeckBEQMid")      return T::DeckBEQMid;
+    if (id == "DeckBEQLow")      return T::DeckBEQLow;
+    if (id == "Crossfader")      return T::Crossfader;
+    if (id == "ReverbAmount")    return T::ReverbAmount;
+    if (id == "DelayAmount")     return T::DelayAmount;
+    if (id == "FilterFreq")      return T::FilterFreq;
+    if (id == "DeckAPlay")       return T::DeckAPlay;
+    if (id == "DeckBPlay")       return T::DeckBPlay;
+    if (id == "DeckALoad")       return T::DeckALoad;
+    if (id == "DeckBLoad")       return T::DeckBLoad;
+    if (id == "DeckASync")       return T::DeckASync;
+    if (id == "DeckBSync")       return T::DeckBSync;
+    if (id == "DeckALoop")       return T::DeckALoop;
+    if (id == "DeckBLoop")       return T::DeckBLoop;
+    if (id == "DeckACue")        return T::DeckACue;
+    if (id == "DeckBCue")        return T::DeckBCue;
+    if (id == "DeckAHotCue0")    return T::DeckAHotCue0;
+    if (id == "DeckAHotCue1")    return T::DeckAHotCue1;
+    if (id == "DeckAHotCue2")    return T::DeckAHotCue2;
+    if (id == "DeckAHotCue3")    return T::DeckAHotCue3;
+    if (id == "DeckBHotCue0")    return T::DeckBHotCue0;
+    if (id == "DeckBHotCue1")    return T::DeckBHotCue1;
+    if (id == "DeckBHotCue2")    return T::DeckBHotCue2;
+    if (id == "DeckBHotCue3")    return T::DeckBHotCue3;
+    if (id == "DeckAJog")        return T::DeckAJog;
+    if (id == "DeckBJog")        return T::DeckBJog;
+    if (id == "DeckAScratchMode")return T::DeckAScratchMode;
+    if (id == "DeckBScratchMode")return T::DeckBScratchMode;
+    if (id == "DeckACuePt")      return T::DeckACuePt;
+    if (id == "DeckBCuePt")      return T::DeckBCuePt;
+    if (id == "DeckAGain")       return T::DeckAGain;
+    if (id == "DeckBGain")       return T::DeckBGain;
+    if (id == "DeckABeatLoop0")  return T::DeckABeatLoop0;
+    if (id == "DeckABeatLoop1")  return T::DeckABeatLoop1;
+    if (id == "DeckABeatLoop2")  return T::DeckABeatLoop2;
+    if (id == "DeckABeatLoop3")  return T::DeckABeatLoop3;
+    if (id == "DeckBBeatLoop0")  return T::DeckBBeatLoop0;
+    if (id == "DeckBBeatLoop1")  return T::DeckBBeatLoop1;
+    if (id == "DeckBBeatLoop2")  return T::DeckBBeatLoop2;
+    if (id == "DeckBBeatLoop3")  return T::DeckBBeatLoop3;
+    // Range: SamplerPad0 – SamplerPad15
+    if (id.startsWith("SamplerPad"))
+    {
+        int idx = id.substring(10).getIntValue();
+        if (idx >= 0 && idx < 16)
+            return static_cast<T>(static_cast<int>(T::SamplerPad0) + idx);
+    }
+    return T::Unknown;
+}
+
+juce::String MidiMapping::targetId(Target t)
+{
+    using T = Target;
+    switch (t)
+    {
+        case T::DeckAVolume:     return "DeckAVolume";
+        case T::DeckBVolume:     return "DeckBVolume";
+        case T::DeckATempo:      return "DeckATempo";
+        case T::DeckBTempo:      return "DeckBTempo";
+        case T::DeckAPan:        return "DeckAPan";
+        case T::DeckBPan:        return "DeckBPan";
+        case T::DeckAEQHigh:     return "DeckAEQHigh";
+        case T::DeckAEQMid:      return "DeckAEQMid";
+        case T::DeckAEQLow:      return "DeckAEQLow";
+        case T::DeckBEQHigh:     return "DeckBEQHigh";
+        case T::DeckBEQMid:      return "DeckBEQMid";
+        case T::DeckBEQLow:      return "DeckBEQLow";
+        case T::Crossfader:      return "Crossfader";
+        case T::ReverbAmount:    return "ReverbAmount";
+        case T::DelayAmount:     return "DelayAmount";
+        case T::FilterFreq:      return "FilterFreq";
+        case T::DeckAPlay:       return "DeckAPlay";
+        case T::DeckBPlay:       return "DeckBPlay";
+        case T::DeckALoad:       return "DeckALoad";
+        case T::DeckBLoad:       return "DeckBLoad";
+        case T::DeckASync:       return "DeckASync";
+        case T::DeckBSync:       return "DeckBSync";
+        case T::DeckALoop:       return "DeckALoop";
+        case T::DeckBLoop:       return "DeckBLoop";
+        case T::DeckACue:        return "DeckACue";
+        case T::DeckBCue:        return "DeckBCue";
+        case T::DeckAHotCue0:    return "DeckAHotCue0";
+        case T::DeckAHotCue1:    return "DeckAHotCue1";
+        case T::DeckAHotCue2:    return "DeckAHotCue2";
+        case T::DeckAHotCue3:    return "DeckAHotCue3";
+        case T::DeckBHotCue0:    return "DeckBHotCue0";
+        case T::DeckBHotCue1:    return "DeckBHotCue1";
+        case T::DeckBHotCue2:    return "DeckBHotCue2";
+        case T::DeckBHotCue3:    return "DeckBHotCue3";
+        case T::DeckAJog:        return "DeckAJog";
+        case T::DeckBJog:        return "DeckBJog";
+        case T::DeckAScratchMode:return "DeckAScratchMode";
+        case T::DeckBScratchMode:return "DeckBScratchMode";
+        case T::DeckACuePt:      return "DeckACuePt";
+        case T::DeckBCuePt:      return "DeckBCuePt";
+        case T::DeckAGain:       return "DeckAGain";
+        case T::DeckBGain:       return "DeckBGain";
+        case T::DeckABeatLoop0:  return "DeckABeatLoop0";
+        case T::DeckABeatLoop1:  return "DeckABeatLoop1";
+        case T::DeckABeatLoop2:  return "DeckABeatLoop2";
+        case T::DeckABeatLoop3:  return "DeckABeatLoop3";
+        case T::DeckBBeatLoop0:  return "DeckBBeatLoop0";
+        case T::DeckBBeatLoop1:  return "DeckBBeatLoop1";
+        case T::DeckBBeatLoop2:  return "DeckBBeatLoop2";
+        case T::DeckBBeatLoop3:  return "DeckBBeatLoop3";
+        default:
+        {
+            int idx = static_cast<int>(t) - static_cast<int>(T::SamplerPad0);
+            if (idx >= 0 && idx < 16)
+                return "SamplerPad" + juce::String(idx);
+            return "Unknown";
+        }
+    }
+}
+
+DeviceMapping MidiController::profileFromJSON(const juce::var& json)
+{
+    DeviceMapping m;
+    m.profileName    = json["name"].toString();
+    m.deckBChannel   = (int)json["deckBChannel"];
+    m.globalChannel  = (int)json["globalChannel"];
+    m.padChannelA    = (int)json["padChannelA"];
+    m.padChannelB    = (int)json["padChannelB"];
+    m.padHotCueNote  = json["padHotCueNote"].isVoid()  ? -1 : (int)json["padHotCueNote"];
+    m.padLoopNote    = json["padLoopNote"].isVoid()    ? -1 : (int)json["padLoopNote"];
+    m.padSamplerNote = json["padSamplerNote"].isVoid() ? -1 : (int)json["padSamplerNote"];
+    m.padLEDFirstNote= json["padLEDFirstNote"].isVoid()? -1 : (int)json["padLEDFirstNote"];
+    m.padLEDChannel  = json["padLEDChannel"].isVoid()  ?  1 : (int)json["padLEDChannel"];
+
+    auto padNotesVar = json["padNotes"];
+    if (padNotesVar.isArray())
+        for (int i = 0; i < 4 && i < padNotesVar.size(); ++i)
+            m.padNotes[(size_t)i] = (int)padNotesVar[i];
+
+    // Helper: parse a {"number": "TargetId"} JSON object into a map entry
+    auto parseMap = [&](const char* key, std::map<int, MidiMapping>& outMap, bool isButton)
+    {
+        auto obj = json[key];
+        if (auto* dynObj = obj.getDynamicObject())
+            for (auto& prop : dynObj->getProperties())
+            {
+                int  number = prop.name.toString().getIntValue();
+                auto target = targetFromString(prop.value.toString());
+                if (target != MidiMapping::Target::Unknown)
+                    outMap[number] = { target, isButton };
+            }
+    };
+    parseMap("cc",           m.ccMap,         false);
+    parseMap("notes",        m.noteMap,        true);
+    parseMap("globalCC",     m.globalCCMap,    false);
+    parseMap("globalNotes",  m.globalNoteMap,  true);
+
+    auto capsVar = json["capabilities"];
+    if (capsVar.isArray())
+        for (int i = 0; i < capsVar.size(); ++i)
+        {
+            auto cap = capsVar[i].toString();
+            if      (cap == "DeckControls") m.capabilities.push_back(DeviceCapability::DeckControls);
+            else if (cap == "SamplerPads")  m.capabilities.push_back(DeviceCapability::SamplerPads);
+            else if (cap == "HotCues")      m.capabilities.push_back(DeviceCapability::HotCues);
+            else if (cap == "FXControls")   m.capabilities.push_back(DeviceCapability::FXControls);
+        }
+
+    return m;
+}
+
+bool MidiController::tryLoadJSONProfile(const juce::String& deviceName, DeviceMapping& out)
+{
+    const juce::File searchDirs[] = {
+        getUserProfilesDir(),
+        juce::File::getSpecialLocation(juce::File::currentExecutableFile)
+            .getParentDirectory().getChildFile("profiles"),
+    };
+
+    auto lo = deviceName.toLowerCase();
+
+    for (auto& dir : searchDirs)
+    {
+        if (!dir.isDirectory()) continue;
+        for (auto& f : dir.findChildFiles(juce::File::findFiles, false, "*.json"))
+        {
+            auto json = juce::JSON::parse(f);
+            if (!json.isObject()) continue;
+
+            auto matchVar = json["match"];
+            if (!matchVar.isArray()) continue;
+
+            for (int i = 0; i < matchVar.size(); ++i)
+            {
+                if (lo.contains(matchVar[i].toString().toLowerCase()))
+                {
+                    out = profileFromJSON(json);
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void MidiController::exportProfileToJSON(const juce::String& deviceName,
+                                          const juce::File&   outputFile) const
+{
+    DeviceMapping mapping;
+    {
+        juce::ScopedLock sl(deviceLock);
+        for (auto& d : activeDevices)
+            if (d.name == deviceName) { mapping = d.mapping; break; }
+    }
+
+    auto* root = new juce::DynamicObject();
+    root->setProperty("name",          mapping.profileName.isEmpty() ? deviceName : mapping.profileName);
+    root->setProperty("match",         juce::Array<juce::var>{ deviceName.toLowerCase() });
+    root->setProperty("deckBChannel",  mapping.deckBChannel);
+    root->setProperty("globalChannel", mapping.globalChannel);
+    root->setProperty("padChannelA",   mapping.padChannelA);
+    root->setProperty("padChannelB",   mapping.padChannelB);
+    root->setProperty("padHotCueNote", mapping.padHotCueNote);
+    root->setProperty("padLoopNote",   mapping.padLoopNote);
+    root->setProperty("padSamplerNote",mapping.padSamplerNote);
+    root->setProperty("padLEDFirstNote",mapping.padLEDFirstNote);
+    root->setProperty("padLEDChannel", mapping.padLEDChannel);
+
+    juce::Array<juce::var> padNotesArr;
+    for (int n : mapping.padNotes) padNotesArr.add(n);
+    root->setProperty("padNotes", padNotesArr);
+
+    auto buildMapVar = [](const std::map<int, MidiMapping>& map) -> juce::var
+    {
+        auto* obj = new juce::DynamicObject();
+        for (auto& [num, mm] : map)
+            obj->setProperty(juce::String(num), MidiMapping::targetId(mm.target));
+        return juce::var(obj);
+    };
+    root->setProperty("cc",          buildMapVar(mapping.ccMap));
+    root->setProperty("notes",       buildMapVar(mapping.noteMap));
+    root->setProperty("globalCC",    buildMapVar(mapping.globalCCMap));
+    root->setProperty("globalNotes", buildMapVar(mapping.globalNoteMap));
+
+    juce::Array<juce::var> caps;
+    for (auto cap : mapping.capabilities)
+    {
+        switch (cap)
+        {
+            case DeviceCapability::DeckControls: caps.add("DeckControls"); break;
+            case DeviceCapability::SamplerPads:  caps.add("SamplerPads");  break;
+            case DeviceCapability::HotCues:      caps.add("HotCues");      break;
+            case DeviceCapability::FXControls:   caps.add("FXControls");   break;
+        }
+    }
+    root->setProperty("capabilities", caps);
+
+    outputFile.getParentDirectory().createDirectory();
+    outputFile.replaceWithText(juce::JSON::toString(juce::var(root), true));
+}
+
+
 // ── Profile selection ─────────────────────────────────────────────────────────
 
 DeviceMapping MidiController::buildProfile(const juce::String& name)
 {
-    auto lo = name.toLowerCase();
     DeviceMapping m;
+
+    // JSON profiles take priority — users can customise or add controllers without recompiling.
+    if (tryLoadJSONProfile(name, m))
+        return m;
+
+    auto lo = name.toLowerCase();
 
     if      (lo.contains("launchpad"))
         applyLaunchpad(m);

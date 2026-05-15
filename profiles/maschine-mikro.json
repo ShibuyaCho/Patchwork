@@ -1,0 +1,40 @@
+{
+  "name": "Maschine Mikro",
+  "match": ["maschine", "mikro", "native instruments", "ni maschine"],
+  "deckBChannel": 0,
+  "globalChannel": 0,
+  "padChannelA": 0,
+  "padChannelB": 0,
+  "padHotCueNote": -1,
+  "padLoopNote": -1,
+  "padSamplerNote": -1,
+  "padNotes": [-1, -1, -1, -1],
+  "padLEDFirstNote": 36,
+  "padLEDChannel": 1,
+  "capabilities": ["SamplerPads", "FXControls"],
+  "cc": {
+    "70": "ReverbAmount",
+    "71": "DelayAmount",
+    "72": "FilterFreq"
+  },
+  "notes": {
+    "36": "SamplerPad0",
+    "37": "SamplerPad1",
+    "38": "SamplerPad2",
+    "39": "SamplerPad3",
+    "40": "SamplerPad4",
+    "41": "SamplerPad5",
+    "42": "SamplerPad6",
+    "43": "SamplerPad7",
+    "44": "SamplerPad8",
+    "45": "SamplerPad9",
+    "46": "SamplerPad10",
+    "47": "SamplerPad11",
+    "48": "SamplerPad12",
+    "49": "SamplerPad13",
+    "50": "SamplerPad14",
+    "51": "SamplerPad15"
+  },
+  "globalCC": {},
+  "globalNotes": {}
+}

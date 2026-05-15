@@ -1,0 +1,43 @@
+{
+  "name": "Pioneer DDJ",
+  "match": ["ddj", "pioneer dj"],
+  "deckBChannel": 2,
+  "globalChannel": 16,
+  "padChannelA": 0,
+  "padChannelB": 0,
+  "padHotCueNote": -1,
+  "padLoopNote": -1,
+  "padSamplerNote": -1,
+  "padNotes": [-1, -1, -1, -1],
+  "padLEDFirstNote": -1,
+  "padLEDChannel": 1,
+  "capabilities": ["DeckControls", "HotCues", "FXControls", "SamplerPads"],
+  "cc": {
+    "0":  "DeckAGain",
+    "9":  "DeckATempo",
+    "7":  "DeckAVolume",
+    "38": "DeckAEQHigh",
+    "39": "DeckAEQMid",
+    "40": "DeckAEQLow",
+    "6":  "DeckAJog"
+  },
+  "notes": {
+    "11": "DeckAPlay",
+    "12": "DeckACuePt",
+    "45": "DeckASync",
+    "64": "DeckALoop",
+    "70": "DeckAHotCue0",
+    "71": "DeckAHotCue1",
+    "72": "DeckAHotCue2",
+    "73": "DeckAHotCue3",
+    "13": "DeckACue",
+    "58": "DeckAScratchMode"
+  },
+  "globalCC": {
+    "63": "Crossfader"
+  },
+  "globalNotes": {
+    "40": "DeckALoad",
+    "41": "DeckBLoad"
+  }
+}

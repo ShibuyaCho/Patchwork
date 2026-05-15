@@ -1,0 +1,42 @@
+{
+  "name": "Denon MC",
+  "match": ["denon", "mc3000", "mc4000"],
+  "deckBChannel": 2,
+  "globalChannel": 16,
+  "padChannelA": 0,
+  "padChannelB": 0,
+  "padHotCueNote": -1,
+  "padLoopNote": -1,
+  "padSamplerNote": -1,
+  "padNotes": [-1, -1, -1, -1],
+  "padLEDFirstNote": -1,
+  "padLEDChannel": 1,
+  "capabilities": ["DeckControls", "HotCues"],
+  "cc": {
+    "18": "DeckATempo",
+    "7":  "DeckAVolume",
+    "8":  "DeckAEQHigh",
+    "9":  "DeckAEQMid",
+    "10": "DeckAEQLow",
+    "12": "DeckAGain",
+    "6":  "DeckAJog"
+  },
+  "notes": {
+    "0":  "DeckAPlay",
+    "1":  "DeckACuePt",
+    "2":  "DeckASync",
+    "3":  "DeckALoop",
+    "16": "DeckAHotCue0",
+    "17": "DeckAHotCue1",
+    "18": "DeckAHotCue2",
+    "19": "DeckAHotCue3",
+    "12": "DeckACue"
+  },
+  "globalCC": {
+    "14": "Crossfader"
+  },
+  "globalNotes": {
+    "40": "DeckALoad",
+    "41": "DeckBLoad"
+  }
+}

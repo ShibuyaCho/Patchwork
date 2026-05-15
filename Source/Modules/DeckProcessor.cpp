@@ -390,6 +390,19 @@ double DeckProcessor::getLoopOutSeconds() const { return (double)loopOutSample.l
 
 // Beat jump
 
+void DeckProcessor::setHotCueSamplesRaw(int idx, int64_t samples)
+{
+    if (idx >= 0 && idx < NUM_HOT_CUES)
+        hotCueSamples[idx].store(samples);
+}
+
+void DeckProcessor::setLoopPoints(double loopInSamples, double loopOutSamples, bool activate)
+{
+    loopInSample.store((int64_t)loopInSamples);
+    loopOutSample.store((int64_t)loopOutSamples);
+    looping.store(activate);
+}
+
 void DeckProcessor::beatJump(int beats)
 {
     float bpm = analyzer.getDetectedBPM();

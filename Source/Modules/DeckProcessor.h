@@ -88,6 +88,10 @@ public:
     bool isHotCueSet(int idx) const;
     double getHotCueSamples(int idx) const;
 
+    // State restoration — set positions directly without triggering snap/quantise logic
+    void setHotCueSamplesRaw(int idx, int64_t samples);
+    void setLoopPoints(double loopInSamples, double loopOutSamples, bool activate);
+
     // Loop
     void setLoopIn();
     void setLoopOut();

@@ -345,16 +345,114 @@ void PatchworkAudioProcessor::changeProgramName(int, const juce::String&) {}
 
 void PatchworkAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    auto state = apvts.copyState();
-    std::unique_ptr<juce::XmlElement> xml(state.createXml());
+    // Root tree wraps APVTS parameters plus per-deck state that must survive
+    // a DAW project save/reload (loaded files, hot cues, loop points).
+    juce::ValueTree root("PatchworkState");
+    root.appendChild(apvts.copyState(), nullptr);
+
+    auto saveDeck = [&](const DeckProcessor& deck, const char* tag)
+    {
+        juce::ValueTree d(tag);
+        d.setProperty("file", deck.getLoadedFile().getFullPathName(), nullptr);
+        d.setProperty("tempo", deck.getTempo(), nullptr);
+        for (int i = 0; i < DeckProcessor::NUM_HOT_CUES; ++i)
+            if (deck.isHotCueSet(i))
+                d.setProperty("hotCue" + juce::String(i),
+                              (juce::int64)deck.getHotCueSamples(i), nullptr);
+        if (deck.isLooping())
+        {
+            d.setProperty("loopIn",  deck.getLoopInSeconds(),  nullptr);
+            d.setProperty("loopOut", deck.getLoopOutSeconds(), nullptr);
+        }
+        root.appendChild(d, nullptr);
+    };
+    saveDeck(deckA, "DeckA");
+    saveDeck(deckB, "DeckB");
+
+    // Persist custom MIDI learn mappings inline in the project state.
+    juce::MemoryOutputStream midiStream;
+    {
+        juce::File tmpFile = juce::File::createTempFile("patchwork_midi_tmp");
+        midiController.saveCustomMappings(tmpFile);
+        if (tmpFile.existsAsFile())
+        {
+            juce::MemoryBlock mb;
+            tmpFile.loadFileAsData(mb);
+            juce::ValueTree midiState("MidiMappings");
+            midiState.setProperty("xml", mb.toBase64Encoding(), nullptr);
+            root.appendChild(midiState, nullptr);
+            tmpFile.deleteFile();
+        }
+    }
+
+    std::unique_ptr<juce::XmlElement> xml(root.createXml());
     copyXmlToBinary(*xml, destData);
 }
 
 void PatchworkAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
-    if (xmlState && xmlState->hasTagName(apvts.state.getType()))
+    if (!xmlState) return;
+
+    auto root = juce::ValueTree::fromXml(*xmlState);
+
+    // Restore APVTS parameters
+    auto apvtsTree = root.getChildWithName(apvts.state.getType());
+    if (apvtsTree.isValid())
+        apvts.replaceState(apvtsTree);
+    // Legacy: state blob was the APVTS tree directly
+    else if (xmlState->hasTagName(apvts.state.getType()))
         apvts.replaceState(juce::ValueTree::fromXml(*xmlState));
+
+    auto restoreDeck = [&](DeckProcessor& deck, const char* tag)
+    {
+        auto d = root.getChildWithName(tag);
+        if (!d.isValid()) return;
+
+        juce::String filePath = d.getProperty("file", "").toString();
+        if (filePath.isNotEmpty())
+        {
+            juce::File f(filePath);
+            if (f.existsAsFile())
+                deck.loadFile(f);
+        }
+
+        if (d.hasProperty("tempo"))
+            deck.setTempo((float)(double)d.getProperty("tempo"));
+
+        for (int i = 0; i < DeckProcessor::NUM_HOT_CUES; ++i)
+        {
+            auto key = "hotCue" + juce::String(i);
+            if (d.hasProperty(key))
+                deck.setHotCueSamplesRaw(i, (juce::int64)d.getProperty(key));
+        }
+
+        if (d.hasProperty("loopIn") && d.hasProperty("loopOut"))
+        {
+            double sr = currentSampleRate > 0 ? currentSampleRate : 44100.0;
+            deck.setLoopPoints((double)d.getProperty("loopIn")  * sr,
+                               (double)d.getProperty("loopOut") * sr,
+                               true);
+        }
+    };
+    restoreDeck(deckA, "DeckA");
+    restoreDeck(deckB, "DeckB");
+
+    // Restore custom MIDI mappings
+    auto midiState = root.getChildWithName("MidiMappings");
+    if (midiState.isValid())
+    {
+        juce::String encoded = midiState.getProperty("xml", "").toString();
+        if (encoded.isNotEmpty())
+        {
+            juce::MemoryBlock mb;
+            mb.fromBase64Encoding(encoded);
+            juce::File tmpFile = juce::File::createTempFile("patchwork_midi_tmp");
+            tmpFile.replaceWithData(mb.getData(), mb.getSize());
+            midiController.loadCustomMappings(tmpFile);
+            tmpFile.deleteFile();
+        }
+    }
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout
